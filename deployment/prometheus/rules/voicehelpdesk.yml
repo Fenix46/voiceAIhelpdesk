@@ -1,0 +1,367 @@
+# VoiceHelpDeskAI Alerting Rules
+# Prometheus alerting rules for monitoring the voice help desk system
+
+groups:
+  # Application Health and Performance
+  - name: voicehelpdesk.application
+    interval: 30s
+    rules:
+      # Application availability
+      - alert: VoiceHelpDeskDown
+        expr: up{job="voicehelpdesk-app"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: voicehelpdesk
+          category: availability
+        annotations:
+          summary: "VoiceHelpDesk application is down"
+          description: "VoiceHelpDesk application has been down for more than 1 minute. Instance: {{ $labels.instance }}"
+          runbook_url: "https://docs.voicehelpdesk.com/runbooks/app-down"
+
+      # High response time
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(voicehelpdesk_http_request_duration_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+          service: voicehelpdesk
+          category: performance
+        annotations:
+          summary: "High response time detected"
+          description: "95th percentile response time is {{ $value }}s (threshold: 2s) for {{ $labels.instance }}"
+          runbook_url: "https://docs.voicehelpdesk.com/runbooks/high-latency"
+
+      # High error rate
+      - alert: HighErrorRate
+        expr: rate(voicehelpdesk_http_requests_total{status=~"5.."}[5m]) / rate(voicehelpdesk_http_requests_total[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+          service: voicehelpdesk
+          category: errors
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value | humanizePercentage }} (threshold: 5%) for {{ $labels.instance }}"
+          runbook_url: "https://docs.voicehelpdesk.com/runbooks/high-error-rate"
+
+      # Critical error rate
+      - alert: CriticalErrorRate
+        expr: rate(voicehelpdesk_http_requests_total{status=~"5.."}[5m]) / rate(voicehelpdesk_http_requests_total[5m]) > 0.20
+        for: 1m
+        labels:
+          severity: critical
+          service: voicehelpdesk
+          category: errors
+        annotations:
+          summary: "Critical error rate detected"
+          description: "Error rate is {{ $value | humanizePercentage }} (threshold: 20%) for {{ $labels.instance }}"
+          runbook_url: "https://docs.voicehelpdesk.com/runbooks/critical-error-rate"
+
+      # Memory usage
+      - alert: HighMemoryUsage
+        expr: (process_resident_memory_bytes{job="voicehelpdesk-app"} / 1024 / 1024) > 1024
+        for: 5m
+        labels:
+          severity: warning
+          service: voicehelpdesk
+          category: resources
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is {{ $value }}MB (threshold: 1024MB) for {{ $labels.instance }}"
+
+      # CPU usage
+      - alert: HighCPUUsage
+        expr: rate(process_cpu_seconds_total{job="voicehelpdesk-app"}[5m]) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: voicehelpdesk
+          category: resources
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage is {{ $value }}% (threshold: 80%) for {{ $labels.instance }}"
+
+  # Audio Processing Alerts
+  - name: voicehelpdesk.audio
+    interval: 15s
+    rules:
+      # Audio processing failure rate
+      - alert: AudioProcessingFailures
+        expr: rate(voicehelpdesk_audio_processing_errors_total[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+          service: voicehelpdesk
+          category: audio
+        annotations:
+          summary: "High audio processing failure rate"
+          description: "Audio processing error rate is {{ $value }}/sec for {{ $labels.instance }}"
+
+      # STT (Speech-to-Text) latency
+      - alert: HighSTTLatency
+        expr: histogram_quantile(0.95, rate(voicehelpdesk_stt_duration_seconds_bucket[5m])) > 5
+        for: 3m
+        labels:
+          severity: warning
+          service: voicehelpdesk
+          category: audio
+        annotations:
+          summary: "High STT processing latency"
+          description: "95th percentile STT latency is {{ $value }}s (threshold: 5s)"
+
+      # TTS (Text-to-Speech) latency
+      - alert: HighTTSLatency
+        expr: histogram_quantile(0.95, rate(voicehelpdesk_tts_duration_seconds_bucket[5m])) > 3
+        for: 3m
+        labels:
+          severity: warning
+          service: voicehelpdesk
+          category: audio
+        annotations:
+          summary: "High TTS processing latency"
+          description: "95th percentile TTS latency is {{ $value }}s (threshold: 3s)"
+
+      # Audio queue depth
+      - alert: AudioQueueBacklog
+        expr: voicehelpdesk_audio_queue_depth > 100
+        for: 1m
+        labels:
+          severity: warning
+          service: voicehelpdesk
+          category: audio
+        annotations:
+          summary: "Audio processing queue backlog"
+          description: "Audio queue depth is {{ $value }} (threshold: 100)"
+
+      # VAD (Voice Activity Detection) errors
+      - alert: VADErrors
+        expr: rate(voicehelpdesk_vad_errors_total[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+          service: voicehelpdesk
+          category: audio
+        annotations:
+          summary: "VAD processing errors"
+          description: "VAD error rate is {{ $value }}/sec"
+
+  # AI/ML Model Alerts
+  - name: voicehelpdesk.ai
+    interval: 30s
+    rules:
+      # LLM response time
+      - alert: HighLLMLatency
+        expr: histogram_quantile(0.95, rate(voicehelpdesk_llm_response_duration_seconds_bucket[5m])) > 10
+        for: 3m
+        labels:
+          severity: warning
+          service: voicehelpdesk
+          category: ai
+        annotations:
+          summary: "High LLM response latency"
+          description: "95th percentile LLM response time is {{ $value }}s (threshold: 10s)"
+
+      # LLM error rate
+      - alert: LLMErrors
+        expr: rate(voicehelpdesk_llm_errors_total[5m]) > 0.01
+        for: 2m
+        labels:
+          severity: warning
+          service: voicehelpdesk
+          category: ai
+        annotations:
+          summary: "LLM processing errors"
+          description: "LLM error rate is {{ $value }}/sec"
+
+      # NLU confidence too low
+      - alert: LowNLUConfidence
+        expr: histogram_quantile(0.50, rate(voicehelpdesk_nlu_confidence_bucket[5m])) < 0.7
+        for: 5m
+        labels:
+          severity: warning
+          service: voicehelpdesk
+          category: ai
+        annotations:
+          summary: "Low NLU confidence scores"
+          description: "Median NLU confidence is {{ $value }} (threshold: 0.7)"
+
+      # Model loading failures
+      - alert: ModelLoadingFailure
+        expr: increase(voicehelpdesk_model_loading_failures_total[5m]) > 0
+        for: 0s
+        labels:
+          severity: critical
+          service: voicehelpdesk
+          category: ai
+        annotations:
+          summary: "AI model loading failure"
+          description: "Model {{ $labels.model_name }} failed to load"
+
+  # Business Logic Alerts
+  - name: voicehelpdesk.business
+    interval: 60s
+    rules:
+      # Conversation completion rate
+      - alert: LowConversationCompletionRate
+        expr: rate(voicehelpdesk_conversations_completed_total[10m]) / rate(voicehelpdesk_conversations_started_total[10m]) < 0.8
+        for: 5m
+        labels:
+          severity: warning
+          service: voicehelpdesk
+          category: business
+        annotations:
+          summary: "Low conversation completion rate"
+          description: "Conversation completion rate is {{ $value | humanizePercentage }} (threshold: 80%)"
+
+      # Ticket escalation rate
+      - alert: HighTicketEscalationRate
+        expr: rate(voicehelpdesk_tickets_escalated_total[10m]) / rate(voicehelpdesk_tickets_created_total[10m]) > 0.15
+        for: 5m
+        labels:
+          severity: warning
+          service: voicehelpdesk
+          category: business
+        annotations:
+          summary: "High ticket escalation rate"
+          description: "Ticket escalation rate is {{ $value | humanizePercentage }} (threshold: 15%)"
+
+      # User satisfaction score
+      - alert: LowUserSatisfaction
+        expr: avg_over_time(voicehelpdesk_user_satisfaction_score[10m]) < 3.5
+        for: 5m
+        labels:
+          severity: warning
+          service: voicehelpdesk
+          category: business
+        annotations:
+          summary: "Low user satisfaction score"
+          description: "Average user satisfaction is {{ $value }}/5 (threshold: 3.5/5)"
+
+  # Infrastructure Alerts
+  - name: voicehelpdesk.infrastructure
+    interval: 30s
+    rules:
+      # Redis connection
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: redis
+          category: infrastructure
+        annotations:
+          summary: "Redis is down"
+          description: "Redis instance is down for {{ $labels.instance }}"
+
+      # Redis memory usage
+      - alert: RedisHighMemoryUsage
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.8
+        for: 2m
+        labels:
+          severity: warning
+          service: redis
+          category: infrastructure
+        annotations:
+          summary: "Redis high memory usage"
+          description: "Redis memory usage is {{ $value | humanizePercentage }} (threshold: 80%)"
+
+      # Celery worker down
+      - alert: CeleryWorkerDown
+        expr: up{job="celery-worker"} == 0
+        for: 2m
+        labels:
+          severity: warning
+          service: celery
+          category: infrastructure
+        annotations:
+          summary: "Celery worker is down"
+          description: "Celery worker is down for {{ $labels.instance }}"
+
+      # Celery queue depth
+      - alert: CeleryQueueBacklog
+        expr: celery_queue_length > 50
+        for: 5m
+        labels:
+          severity: warning
+          service: celery
+          category: infrastructure
+        annotations:
+          summary: "Celery queue backlog"
+          description: "Celery queue {{ $labels.queue }} has {{ $value }} pending tasks (threshold: 50)"
+
+      # Nginx down
+      - alert: NginxDown
+        expr: up{job="nginx"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: nginx
+          category: infrastructure
+        annotations:
+          summary: "Nginx is down"
+          description: "Nginx instance is down"
+
+      # High nginx error rate
+      - alert: NginxHighErrorRate
+        expr: rate(nginx_http_requests_total{status=~"5.."}[5m]) / rate(nginx_http_requests_total[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+          service: nginx
+          category: infrastructure
+        annotations:
+          summary: "High Nginx error rate"
+          description: "Nginx error rate is {{ $value | humanizePercentage }} (threshold: 5%)"
+
+  # System Resource Alerts
+  - name: voicehelpdesk.system
+    interval: 30s
+    rules:
+      # Disk space
+      - alert: LowDiskSpace
+        expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) < 0.1
+        for: 2m
+        labels:
+          severity: warning
+          service: system
+          category: resources
+        annotations:
+          summary: "Low disk space"
+          description: "Disk {{ $labels.mountpoint }} has {{ $value | humanizePercentage }} space available (threshold: 10%)"
+
+      # Critical disk space
+      - alert: CriticalDiskSpace
+        expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) < 0.05
+        for: 1m
+        labels:
+          severity: critical
+          service: system
+          category: resources
+        annotations:
+          summary: "Critical disk space"
+          description: "Disk {{ $labels.mountpoint }} has {{ $value | humanizePercentage }} space available (threshold: 5%)"
+
+      # High system load
+      - alert: HighSystemLoad
+        expr: node_load15 > 2
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+          category: resources
+        annotations:
+          summary: "High system load"
+          description: "System load average is {{ $value }} (threshold: 2)"
+
+      # Out of memory
+      - alert: OutOfMemory
+        expr: (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) < 0.1
+        for: 2m
+        labels:
+          severity: critical
+          service: system
+          category: resources
+        annotations:
+          summary: "Out of memory"
+          description: "Available memory is {{ $value | humanizePercentage }} (threshold: 10%)"

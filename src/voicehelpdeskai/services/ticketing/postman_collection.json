@@ -1,0 +1,956 @@
+{
+  "info": {
+    "name": "VoiceHelpDeskAI Mock Ticket API",
+    "description": "Comprehensive collection for testing the VoiceHelpDeskAI Mock Ticket API with realistic scenarios",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "ticketId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "user-123",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Tickets",
+      "item": [
+        {
+          "name": "Create Ticket - Software Issue",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Response has ticket ID', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('ticket_number');",
+                  "    pm.collectionVariables.set('ticketId', jsonData.id);",
+                  "});",
+                  "",
+                  "pm.test('Ticket has correct status', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.eql('open');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Excel si blocca quando apro file grandi\",\n  \"description\": \"Stavo lavorando su un file Excel di 50MB quando improvvisamente l'applicazione si è chiusa senza salvare il mio lavoro. Questo succede ogni volta che provo ad aprire file superiori a 30MB. Ho perso 3 ore di lavoro e devo consegnare il report domani mattina.\",\n  \"priority\": 4,\n  \"category\": \"software\",\n  \"subcategory\": \"office\",\n  \"user_id\": \"{{userId}}\",\n  \"reporter_email\": \"mario.rossi@company.com\",\n  \"reporter_phone\": \"+39 123 456 7890\",\n  \"affected_systems\": [\"Microsoft Excel\", \"Windows 10\"],\n  \"asset_ids\": [\"PC-001\", \"LIC-OFF365-001\"],\n  \"tags\": [\"excel\", \"crash\", \"file-grandi\", \"urgente\"],\n  \"business_impact\": \"Blocco attività di reporting finanziario\",\n  \"urgency_justification\": \"Scadenza report per il management domani\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tickets",
+              "host": ["{{baseUrl}}"],
+              "path": ["tickets"]
+            }
+          }
+        },
+        {
+          "name": "Create Ticket - Hardware Issue",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Computer molto lento e rumori strani\",\n  \"description\": \"Il mio computer è diventato estremamente lento negli ultimi 3 giorni. L'avvio richiede 15 minuti e sento rumori strani dal case, come un ventilatore che gira irregolarmente. Le applicazioni impiegano molto tempo ad aprirsi e spesso si bloccano.\",\n  \"priority\": 3,\n  \"category\": \"hardware\",\n  \"subcategory\": \"performance\",\n  \"user_id\": \"{{userId}}\",\n  \"reporter_email\": \"giulia.bianchi@company.com\",\n  \"affected_systems\": [\"PC Desktop\", \"Windows 10\"],\n  \"asset_ids\": [\"PC-042\"],\n  \"tags\": [\"performance\", \"hardware\", \"ventilatore\", \"lentezza\"],\n  \"business_impact\": \"Ridotta produttività nelle attività quotidiane\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tickets",
+              "host": ["{{baseUrl}}"],
+              "path": ["tickets"]
+            }
+          }
+        },
+        {
+          "name": "Create Ticket - Network Issue",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Disconnessioni frequenti dalla rete Wi-Fi\",\n  \"description\": \"Da questa mattina il mio laptop si disconnette dalla rete Wi-Fi ogni 10-15 minuti. Devo riconnettermi manualmente ogni volta. Questo compromette il mio lavoro da remoto e le videochiamate con i clienti.\",\n  \"priority\": 4,\n  \"category\": \"network\",\n  \"subcategory\": \"wifi\",\n  \"user_id\": \"{{userId}}\",\n  \"reporter_email\": \"andrea.verdi@company.com\",\n  \"affected_systems\": [\"Wi-Fi\", \"Laptop Lenovo\"],\n  \"tags\": [\"wifi\", \"disconnessioni\", \"rete\", \"remoto\"],\n  \"business_impact\": \"Interruzioni continue durante meeting clienti\",\n  \"urgency_justification\": \"Meeting importanti programmati oggi pomeriggio\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tickets",
+              "host": ["{{baseUrl}}"],
+              "path": ["tickets"]
+            }
+          }
+        },
+        {
+          "name": "Create Ticket - Emergency",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"EMERGENZA: Server di produzione offline\",\n  \"description\": \"Il server di produzione principale è completamente offline da 20 minuti. Tutti i servizi aziendali sono inaccessibili: ERP, CRM, email, sito web. I clienti non possono effettuare ordini online. Perdita economica stimata €5.000 ogni ora di downtime.\",\n  \"priority\": 5,\n  \"category\": \"hardware\",\n  \"subcategory\": \"server\",\n  \"user_id\": \"{{userId}}\",\n  \"reporter_email\": \"admin@company.com\",\n  \"reporter_phone\": \"+39 123 456 7890\",\n  \"affected_systems\": [\"Server di Produzione\", \"ERP SAP\", \"CRM Salesforce\", \"Sito Web\", \"Email Exchange\"],\n  \"asset_ids\": [\"SRV-PROD-01\", \"SRV-DB-01\"],\n  \"tags\": [\"emergenza\", \"server\", \"produzione\", \"downtime\", \"critico\"],\n  \"business_impact\": \"Blocco totale operazioni aziendali e vendite online\",\n  \"urgency_justification\": \"Perdita economica critica €5.000/ora\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tickets",
+              "host": ["{{baseUrl}}"],
+              "path": ["tickets"]
+            }
+          }
+        },
+        {
+          "name": "Get Ticket by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains ticket details', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('ticket_number');",
+                  "    pm.expect(jsonData).to.have.property('status');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/{{ticketId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["tickets", "{{ticketId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Ticket - Assign and Start Work",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Ticket status updated', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.eql('in_progress');",
+                  "    pm.expect(jsonData.assigned_to).to.not.be.null;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"in_progress\",\n  \"assigned_to\": \"tech-456\",\n  \"assigned_group\": \"IT Support L2\",\n  \"internal_notes\": \"Ticket assegnato a tecnico senior per urgenza. Iniziata analisi del problema.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tickets/{{ticketId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["tickets", "{{ticketId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Ticket - Resolve",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"resolved\",\n  \"solution\": \"Identificato problema con memoria RAM insufficiente e ventilatore CPU sporco. Eseguito upgrade RAM da 8GB a 16GB e pulizia sistema di raffreddamento. Ottimizzate impostazioni Excel per gestire file di grandi dimensioni.\",\n  \"resolution_steps\": [\n    \"Diagnosi hardware: identificata RAM insufficiente (8GB)\",\n    \"Pulizia ventilatore CPU e sostituzione pasta termica\",\n    \"Upgrade RAM a 16GB DDR4\",\n    \"Ottimizzazione impostazioni Excel per file grandi\",\n    \"Test funzionalità con file da 50MB\",\n    \"Formazione utente su best practices\"\n  ],\n  \"tags\": [\"excel\", \"crash\", \"file-grandi\", \"risolto\", \"upgrade-ram\"],\n  \"internal_notes\": \"Cliente molto soddisfatto. Richiesta formazione aggiuntiva su Excel avanzato.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tickets/{{ticketId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["tickets", "{{ticketId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Ticket",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Delete confirmation message', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.message).to.include('deleted');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/{{ticketId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["tickets", "{{ticketId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Search & Analytics",
+      "item": [
+        {
+          "name": "Search Tickets - Basic",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains tickets and pagination', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('tickets');",
+                  "    pm.expect(jsonData).to.have.property('pagination');",
+                  "    pm.expect(jsonData.tickets).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"computer lento\",\n  \"page\": 1,\n  \"page_size\": 10,\n  \"sort_by\": \"created_at\",\n  \"sort_order\": \"desc\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tickets/search",
+              "host": ["{{baseUrl}}"],
+              "path": ["tickets", "search"]
+            }
+          }
+        },
+        {
+          "name": "Search Tickets - Advanced Filters",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": [\"open\", \"in_progress\"],\n  \"priority\": [4, 5],\n  \"category\": [\"hardware\", \"network\"],\n  \"created_after\": \"2024-01-01T00:00:00Z\",\n  \"tags\": [\"urgente\"],\n  \"page\": 1,\n  \"page_size\": 20,\n  \"sort_by\": \"priority\",\n  \"sort_order\": \"desc\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tickets/search",
+              "host": ["{{baseUrl}}"],
+              "path": ["tickets", "search"]
+            }
+          }
+        },
+        {
+          "name": "Search Tickets - By User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": \"{{userId}}\",\n  \"page\": 1,\n  \"page_size\": 50\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tickets/search",
+              "host": ["{{baseUrl}}"],
+              "path": ["tickets", "search"]
+            }
+          }
+        },
+        {
+          "name": "Get Ticket Statistics",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains statistics', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('total_tickets');",
+                  "    pm.expect(jsonData).to.have.property('by_category');",
+                  "    pm.expect(jsonData).to.have.property('by_priority');",
+                  "    pm.expect(jsonData).to.have.property('by_status');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["tickets", "stats"]
+            }
+          }
+        },
+        {
+          "name": "Get Statistics - Date Range",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/stats?start_date=2024-01-01T00:00:00Z&end_date=2024-01-31T23:59:59Z",
+              "host": ["{{baseUrl}}"],
+              "path": ["tickets", "stats"],
+              "query": [
+                {
+                  "key": "start_date",
+                  "value": "2024-01-01T00:00:00Z"
+                },
+                {
+                  "key": "end_date",
+                  "value": "2024-01-31T23:59:59Z"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Batch Operations",
+      "item": [
+        {
+          "name": "Batch Update Status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Batch operation results', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('total_requested');",
+                  "    pm.expect(jsonData).to.have.property('successful');",
+                  "    pm.expect(jsonData).to.have.property('failed');",
+                  "    pm.expect(jsonData).to.have.property('results');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ticket_ids\": [\"tick-123\", \"tick-124\", \"tick-125\"],\n  \"operation\": \"update_status\",\n  \"parameters\": {\n    \"status\": \"in_progress\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tickets/batch",
+              "host": ["{{baseUrl}}"],
+              "path": ["tickets", "batch"]
+            }
+          }
+        },
+        {
+          "name": "Batch Assign Tickets",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ticket_ids\": [\"tick-126\", \"tick-127\"],\n  \"operation\": \"assign\",\n  \"parameters\": {\n    \"assigned_to\": \"tech-789\",\n    \"assigned_group\": \"IT Support L1\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tickets/batch",
+              "host": ["{{baseUrl}}"],
+              "path": ["tickets", "batch"]
+            }
+          }
+        },
+        {
+          "name": "Batch Add Tag",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ticket_ids\": [\"tick-128\", \"tick-129\", \"tick-130\"],\n  \"operation\": \"add_tag\",\n  \"parameters\": {\n    \"tag\": \"batch-processed\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tickets/batch",
+              "host": ["{{baseUrl}}"],
+              "path": ["tickets", "batch"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Export",
+      "item": [
+        {
+          "name": "Export CSV",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/export?format=csv",
+              "host": ["{{baseUrl}}"],
+              "path": ["tickets", "export"],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "csv"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Export JSON",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/export?format=json",
+              "host": ["{{baseUrl}}"],
+              "path": ["tickets", "export"],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "json"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Export Filtered Data",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/export?format=csv&start_date=2024-01-01T00:00:00Z&status=resolved&category=hardware",
+              "host": ["{{baseUrl}}"],
+              "path": ["tickets", "export"],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "csv"
+                },
+                {
+                  "key": "start_date",
+                  "value": "2024-01-01T00:00:00Z"
+                },
+                {
+                  "key": "status",
+                  "value": "resolved"
+                },
+                {
+                  "key": "category",
+                  "value": "hardware"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Webhooks",
+      "item": [
+        {
+          "name": "Register Webhook",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Webhook registered', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData.message).to.include('registered');",
+                  "    pm.collectionVariables.set('webhookId', jsonData.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"url\": \"https://webhook.site/your-unique-id\",\n  \"events\": [\"created\", \"updated\", \"status_changed\", \"assigned\"],\n  \"secret\": \"your-webhook-secret-key\",\n  \"active\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/webhooks",
+              "host": ["{{baseUrl}}"],
+              "path": ["webhooks"]
+            }
+          }
+        },
+        {
+          "name": "List Webhooks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/webhooks",
+              "host": ["{{baseUrl}}"],
+              "path": ["webhooks"]
+            }
+          }
+        },
+        {
+          "name": "Delete Webhook",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/webhooks/{{webhookId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["webhooks", "{{webhookId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Test Scenarios",
+      "item": [
+        {
+          "name": "Scenario: Complete Ticket Lifecycle",
+          "item": [
+            {
+              "name": "1. Create Ticket",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Ticket created successfully', function () {",
+                      "    pm.response.to.have.status(201);",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.collectionVariables.set('scenarioTicketId', jsonData.id);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Stampante non stampa documenti\",\n  \"description\": \"La stampante HP LaserJet al secondo piano non stampa i documenti. I lavori rimangono in coda ma non vengono processati. Il led della stampante lampeggia arancione.\",\n  \"priority\": 2,\n  \"category\": \"hardware\",\n  \"subcategory\": \"printer\",\n  \"user_id\": \"{{userId}}\",\n  \"reporter_email\": \"elena.romano@company.com\",\n  \"tags\": [\"stampante\", \"coda-stampa\", \"hardware\"]\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/tickets",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["tickets"]
+                }
+              }
+            },
+            {
+              "name": "2. Assign Ticket",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"in_progress\",\n  \"assigned_to\": \"tech-printer-001\",\n  \"assigned_group\": \"Hardware Support\",\n  \"internal_notes\": \"Assegnato a tecnico specializzato stampanti\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/tickets/{{scenarioTicketId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["tickets", "{{scenarioTicketId}}"]
+                }
+              }
+            },
+            {
+              "name": "3. Add Progress Update",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"pending_user\",\n  \"internal_notes\": \"Identificato problema driver. Richiesto riavvio sistema utente per applicare aggiornamenti.\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/tickets/{{scenarioTicketId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["tickets", "{{scenarioTicketId}}"]
+                }
+              }
+            },
+            {
+              "name": "4. Resolve Ticket",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"resolved\",\n  \"solution\": \"Problema risolto aggiornando driver stampante e pulendo coda di stampa. Utente può ora stampare correttamente.\",\n  \"resolution_steps\": [\n    \"Verifica connessione stampante\",\n    \"Aggiornamento driver HP LaserJet\",\n    \"Pulizia coda di stampa Windows\",\n    \"Test stampa documento\",\n    \"Formazione utente su gestione coda stampa\"\n  ]\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/tickets/{{scenarioTicketId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["tickets", "{{scenarioTicketId}}"]
+                }
+              }
+            },
+            {
+              "name": "5. Close Ticket",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"closed\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/tickets/{{scenarioTicketId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["tickets", "{{scenarioTicketId}}"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Scenario: High Priority Escalation",
+          "item": [
+            {
+              "name": "1. Create High Priority Ticket",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('High priority ticket created', function () {",
+                      "    pm.response.to.have.status(201);",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.priority).to.eql(5);",
+                      "    pm.collectionVariables.set('escalationTicketId', jsonData.id);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"CRITICO: Database principale inaccessibile\",\n  \"description\": \"Il database principale aziendale è completamente inaccessibile da 30 minuti. Errore di connessione su tutte le applicazioni: ERP, CRM, gestionale. L'intera operatività aziendale è bloccata. Circa 200 utenti interessati.\",\n  \"priority\": 5,\n  \"category\": \"hardware\",\n  \"subcategory\": \"database\",\n  \"user_id\": \"{{userId}}\",\n  \"reporter_email\": \"it.manager@company.com\",\n  \"reporter_phone\": \"+39 123 456 7890\",\n  \"affected_systems\": [\"Database SQL Server\", \"ERP SAP\", \"CRM Salesforce\"],\n  \"asset_ids\": [\"DB-PROD-01\", \"SRV-APP-01\"],\n  \"tags\": [\"critico\", \"database\", \"downtime\", \"emergenza\"],\n  \"business_impact\": \"Blocco totale operazioni aziendali - 200 utenti interessati\",\n  \"urgency_justification\": \"Perdita economica stimata €8.000/ora\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/tickets",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["tickets"]
+                }
+              }
+            },
+            {
+              "name": "2. Immediate Assignment",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"in_progress\",\n  \"assigned_to\": \"senior-dba-001\",\n  \"assigned_group\": \"Database Team\",\n  \"priority\": 5,\n  \"internal_notes\": \"ESCALATION: Assegnato immediatamente a DBA senior. War room attivata.\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/tickets/{{escalationTicketId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["tickets", "{{escalationTicketId}}"]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Error Scenarios",
+      "item": [
+        {
+          "name": "Create Ticket - Validation Error",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Validation error returned', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "",
+                  "pm.test('Error details provided', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('detail');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Test\",\n  \"description\": \"Breve\",\n  \"priority\": 10,\n  \"category\": \"invalid_category\",\n  \"user_id\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tickets",
+              "host": ["{{baseUrl}}"],
+              "path": ["tickets"]
+            }
+          }
+        },
+        {
+          "name": "Get Non-Existent Ticket",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Not found error', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/non-existent-id",
+              "host": ["{{baseUrl}}"],
+              "path": ["tickets", "non-existent-id"]
+            }
+          }
+        },
+        {
+          "name": "Batch Operation - Mixed Results",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ticket_ids\": [\"{{ticketId}}\", \"non-existent-1\", \"non-existent-2\"],\n  \"operation\": \"update_status\",\n  \"parameters\": {\n    \"status\": \"resolved\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tickets/batch",
+              "host": ["{{baseUrl}}"],
+              "path": ["tickets", "batch"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Set default variables if not already set",
+          "if (!pm.collectionVariables.get('userId')) {",
+          "    pm.collectionVariables.set('userId', 'user-' + Math.random().toString(36).substr(2, 9));",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global test for response time",
+          "pm.test('Response time is less than 2000ms', function () {",
+          "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+          "});",
+          "",
+          "// Log request details for debugging",
+          "console.log('Request URL:', pm.request.url);",
+          "console.log('Response Status:', pm.response.status);",
+          "",
+          "// Set common variables from successful responses",
+          "if (pm.response.code === 201 && pm.response.json().id && pm.request.url.toString().includes('/tickets') && !pm.request.url.toString().includes('/batch')) {",
+          "    // Store the last created ticket ID",
+          "    pm.collectionVariables.set('lastCreatedTicketId', pm.response.json().id);",
+          "}"
+        ]
+      }
+    }
+  ]
+}

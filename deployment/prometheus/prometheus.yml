@@ -1,0 +1,197 @@
+# Prometheus Configuration for VoiceHelpDeskAI
+# Monitoring setup with alerting and service discovery
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  scrape_timeout: 10s
+  external_labels:
+    environment: 'production'
+    cluster: 'voicehelpdesk'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+# Load alerting rules
+rule_files:
+  - "rules/*.yml"
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 5s
+    metrics_path: /metrics
+
+  # VoiceHelpDeskAI Application
+  - job_name: 'voicehelpdesk-app'
+    static_configs:
+      - targets: ['app:8001']
+    scrape_interval: 10s
+    metrics_path: /metrics
+    scrape_timeout: 5s
+    honor_labels: true
+    
+    # Relabeling
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: app:8001
+
+    # Metric relabeling
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'voicehelpdesk_.*'
+        action: keep
+
+  # Celery Worker Metrics
+  - job_name: 'celery-worker'
+    static_configs:
+      - targets: ['celery-worker:9090']
+    scrape_interval: 15s
+    metrics_path: /metrics
+    honor_labels: true
+
+  # Redis Metrics
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    scrape_interval: 15s
+    metrics_path: /metrics
+    
+    # Add Redis-specific labels
+    relabel_configs:
+      - target_label: service
+        replacement: redis
+
+  # System Metrics (Node Exporter)
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 15s
+    metrics_path: /metrics
+    
+    # System-specific relabeling
+    relabel_configs:
+      - target_label: service
+        replacement: system
+
+  # Nginx Metrics
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['nginx:9113']
+    scrape_interval: 30s
+    metrics_path: /metrics
+    honor_labels: true
+
+  # Grafana Metrics
+  - job_name: 'grafana'
+    static_configs:
+      - targets: ['grafana:3000']
+    scrape_interval: 30s
+    metrics_path: /metrics
+
+  # Blackbox Exporter for endpoint monitoring
+  - job_name: 'blackbox-http'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+        - http://app:8000/health
+        - http://nginx:80/health
+        - https://nginx:443/health
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  # WebSocket endpoint monitoring
+  - job_name: 'blackbox-websocket'
+    metrics_path: /probe
+    params:
+      module: [websocket_connect]
+    static_configs:
+      - targets:
+        - ws://app:8000/ws/health
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  # Audio processing pipeline metrics
+  - job_name: 'voicehelpdesk-audio'
+    static_configs:
+      - targets: ['app:8001']
+    scrape_interval: 5s
+    metrics_path: /metrics/audio
+    honor_labels: true
+    
+    # Filter only audio-related metrics
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'voicehelpdesk_audio_.*|voicehelpdesk_stt_.*|voicehelpdesk_tts_.*|voicehelpdesk_vad_.*'
+        action: keep
+
+  # AI/ML model metrics
+  - job_name: 'voicehelpdesk-ai'
+    static_configs:
+      - targets: ['app:8001']
+    scrape_interval: 15s
+    metrics_path: /metrics/ai
+    honor_labels: true
+    
+    # Filter only AI-related metrics
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'voicehelpdesk_llm_.*|voicehelpdesk_nlu_.*|voicehelpdesk_model_.*'
+        action: keep
+
+  # Business metrics
+  - job_name: 'voicehelpdesk-business'
+    static_configs:
+      - targets: ['app:8001']
+    scrape_interval: 30s
+    metrics_path: /metrics/business
+    honor_labels: true
+    
+    # Filter business metrics
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'voicehelpdesk_conversation_.*|voicehelpdesk_ticket_.*|voicehelpdesk_user_.*'
+        action: keep
+
+# Remote write configuration (for long-term storage)
+# remote_write:
+#   - url: "https://prometheus-remote-write-endpoint.com/api/v1/write"
+#     basic_auth:
+#       username: "username"
+#       password: "password"
+#     queue_config:
+#       capacity: 10000
+#       max_shards: 200
+#       min_shards: 1
+#       max_samples_per_send: 1000
+#       batch_send_deadline: 5s
+
+# Remote read configuration (for querying external data)
+# remote_read:
+#   - url: "https://prometheus-remote-read-endpoint.com/api/v1/read"
+#     basic_auth:
+#       username: "username"
+#       password: "password"

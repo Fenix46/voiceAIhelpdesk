@@ -1,0 +1,53 @@
+# Grafana Dashboard Provisioning Configuration
+# Auto-import dashboards for VoiceHelpDeskAI monitoring
+
+apiVersion: 1
+
+providers:
+  # VoiceHelpDeskAI Application Dashboards
+  - name: 'voicehelpdesk-app'
+    orgId: 1
+    folder: 'VoiceHelpDeskAI'
+    folderUid: 'voicehelpdesk'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/app
+
+  # Infrastructure Dashboards
+  - name: 'infrastructure'
+    orgId: 1
+    folder: 'Infrastructure'
+    folderUid: 'infrastructure'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/infrastructure
+
+  # Business Metrics Dashboards
+  - name: 'business'
+    orgId: 1
+    folder: 'Business Metrics'
+    folderUid: 'business'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/business
+
+  # AI/ML Model Performance
+  - name: 'ai-models'
+    orgId: 1
+    folder: 'AI Models'
+    folderUid: 'ai-models'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/ai

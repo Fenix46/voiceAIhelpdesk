@@ -1,0 +1,194 @@
+# AI Models Configuration for VoiceHelpDeskAI
+# This file contains all AI model-specific settings
+
+# Whisper ASR (Automatic Speech Recognition) Settings
+whisper:
+  # Model configuration
+  model_name: "base"  # tiny, base, small, medium, large, large-v2
+  model_size: "base"
+  language: "auto"    # auto-detect or specific language code (en, it, es, etc.)
+  
+  # Performance settings
+  beam_size: 5        # Beam search size for better accuracy
+  patience: 1.0       # Patience for beam search
+  length_penalty: 1.0 # Length penalty for beam search
+  
+  # Audio preprocessing
+  normalize: true     # Normalize audio before processing
+  mel_filters: 80     # Number of mel filters
+  n_fft: 400         # FFT window size
+  hop_length: 160    # Hop length for STFT
+  
+  # Advanced settings
+  use_fp16: true     # Use half precision for faster inference
+  suppress_blank: true # Suppress blank tokens
+  suppress_tokens: [1, 2, 7, 8, 9, 10, 14, 25, 26, 27, 28, 29, 42, 47, 49, 50, 53, 58, 59, 60, 61, 62, 63, 90, 91, 92, 93, 359, 503, 522, 542, 873, 893, 902, 918, 922, 931, 1350, 1853, 1982, 2460, 2627, 3246, 3253, 3268, 3536, 3846, 3961, 4183, 4667, 6585, 6647, 7273, 9061, 9383, 10428, 10929, 11938, 12033, 12331, 12562, 13793, 14157, 14635, 15265, 15618, 16553, 16604, 18362, 18956, 20075, 21675, 22520, 26130, 26161, 26435, 28279, 29464, 31650, 32302, 32470, 36865, 42863, 47425, 49897, 50257, 50359, 50360, 50361, 50362]
+  
+  # Quality settings
+  compression_ratio_threshold: 2.4 # Threshold for compression ratio
+  logprob_threshold: -1.0      # Log probability threshold
+  no_speech_threshold: 0.6     # No speech threshold
+  
+  # Chunking for long audio
+  chunk_length: 30    # Chunk length in seconds
+  chunk_overlap: 5    # Overlap between chunks in seconds
+
+# Large Language Model Settings
+llm:
+  # Model configuration
+  model_name: "gemma3-1B"      # or custom local model path
+  model_type: "huggingface"    # openai, huggingface, local
+  
+  # Generation parameters
+  temperature: 0.7             # Creativity/randomness (0.0-2.0)
+  max_tokens: 1000            # Maximum output tokens
+  top_p: 0.95                 # Nucleus sampling parameter
+  top_k: 40                   # Top-k sampling parameter
+  frequency_penalty: 0.0      # Frequency penalty (-2.0 to 2.0)
+  presence_penalty: 0.0       # Presence penalty (-2.0 to 2.0)
+  
+  # Stop sequences
+  stop_sequences: ["\n\nUser:", "\n\nAssistant:", "###"]
+  
+  # Context management
+  max_context_length: 4096    # Maximum context window
+  context_overlap: 200        # Overlap when truncating context
+  
+  # Response formatting
+  response_format: "text"     # text, json
+  
+  # System prompts (references to prompts in system_prompts.json)
+  default_system_prompt: "helpdesk_assistant"
+  fallback_system_prompt: "generic_assistant"
+  
+  # Model-specific settings
+  openai:
+    api_key: null              # Set via environment variable
+    organization: null         # OpenAI organization ID
+    timeout: 30               # Request timeout in seconds
+    max_retries: 3            # Maximum retry attempts
+    
+  huggingface:
+    model_path: null          # Path to local model or HF model name
+    device: "auto"            # auto, cpu, cuda
+    torch_dtype: "auto"       # auto, float16, float32
+    load_in_8bit: false       # Use 8-bit quantization
+    load_in_4bit: false       # Use 4-bit quantization
+    
+  local:
+    model_path: null          # Path to local model file
+    context_length: 2048      # Context length for local models
+    n_gpu_layers: 0          # Number of layers to offload to GPU
+
+# Text-to-Speech Settings
+tts:
+  # Model configuration
+  engine: "local"             # openai, coqui, espeak, festival, local
+  voice_model: "qwen3-tts-1.7b-12hz-voicedesign"  # Model-specific voice/model name
+  
+  # Audio generation settings
+  speed: 1.0                 # Speaking speed (0.25-4.0)
+  pitch: 1.0                 # Voice pitch (0.5-2.0)
+  volume: 1.0                # Audio volume (0.0-1.0)
+  
+  # Output settings
+  sample_rate: 24000         # Output sample rate
+  audio_format: "mp3"        # wav, mp3, ogg
+  quality: "standard"        # standard, hd
+  
+  # Voice settings by engine
+  openai:
+    model: "tts-1"           # tts-1, tts-1-hd
+    voice: "alloy"           # alloy, echo, fable, onyx, nova, shimmer
+    response_format: "mp3"   # mp3, opus, aac, flac
+    speed: 1.0               # 0.25 to 4.0
+    
+  coqui:
+    model_name: "tts_models/multilingual/multi-dataset/xtts_v2"
+    language: "en"           # Language code
+    speaker_wav: null        # Path to speaker reference audio
+    temperature: 0.75        # Voice variation
+    length_penalty: 1.0      # Length penalty
+    repetition_penalty: 5.0  # Repetition penalty
+    top_k: 50               # Top-k sampling
+    top_p: 0.85             # Top-p sampling
+
+  local:
+    model_name: "qwen3-tts-1.7b-12hz-voicedesign"
+    model_path: null
+    
+  espeak:
+    voice: "en"             # Voice/language
+    speed: 175              # Words per minute
+    pitch: 50               # Pitch (0-99)
+    amplitude: 100          # Volume (0-200)
+
+# Model Performance Settings
+performance:
+  # Memory management
+  max_memory_usage: "8GB"    # Maximum memory usage per model
+  memory_cleanup_threshold: 0.8  # Cleanup when memory usage exceeds this
+  
+  # GPU settings
+  use_gpu: true              # Use GPU when available
+  gpu_memory_fraction: 0.7   # Fraction of GPU memory to use
+  mixed_precision: true      # Use mixed precision training
+  
+  # Caching
+  enable_model_cache: true   # Cache loaded models in memory
+  cache_size: 3             # Number of models to keep in cache
+  cache_timeout: 1800       # Cache timeout in seconds
+  
+  # Batch processing
+  batch_size: 1             # Batch size for processing
+  max_batch_wait_time: 100  # Max time to wait for batching (ms)
+  
+  # Threading
+  max_concurrent_requests: 5  # Max concurrent model requests
+  request_timeout: 300       # Request timeout in seconds
+
+# Model Endpoints Configuration
+endpoints:
+  # OpenAI endpoints
+  openai:
+    base_url: "https://api.openai.com/v1"
+    chat_completions: "/chat/completions"
+    audio_transcriptions: "/audio/transcriptions"
+    audio_speech: "/audio/speech"
+    
+  # Custom endpoints
+  custom:
+    whisper_endpoint: null    # Custom Whisper endpoint
+    llm_endpoint: null        # Custom LLM endpoint
+    tts_endpoint: null        # Custom TTS endpoint
+
+# Model Validation Settings
+validation:
+  # Input validation
+  max_audio_duration: 300    # Maximum audio duration in seconds
+  min_audio_duration: 0.5    # Minimum audio duration in seconds
+  max_text_length: 10000     # Maximum text length
+  
+  # Output validation
+  validate_responses: true   # Validate model responses
+  filter_inappropriate: true # Filter inappropriate content
+  
+  # Quality checks
+  min_confidence_score: 0.5  # Minimum confidence for transcriptions
+  max_response_time: 30      # Maximum response time in seconds
+
+# Fallback Configuration
+fallback:
+  # Model fallbacks
+  whisper_fallback: "base"   # Fallback Whisper model
+  llm_fallback: "gemma3-1B"  # Fallback LLM model
+  tts_fallback: "espeak"     # Fallback TTS engine
+  
+  # Error handling
+  max_retries: 3            # Maximum retry attempts
+  retry_delay: 1            # Delay between retries in seconds
+  exponential_backoff: true # Use exponential backoff for retries
+  
+  # Graceful degradation
+  disable_tts_on_error: false    # Disable TTS if errors occur
+  text_only_mode: false          # Fall back to text-only responses

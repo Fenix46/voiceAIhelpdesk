@@ -1,0 +1,136 @@
+version: '3.8'
+
+services:
+  # Main application service
+  app:
+    build:
+      context: .
+      target: development
+    container_name: voicehelpdeskai_app
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:///./app.db
+      - REDIS_URL=redis://redis:6379
+      - ENVIRONMENT=development
+      - LOG_LEVEL=DEBUG
+    volumes:
+      - .:/app
+      - ./data:/app/data
+    depends_on:
+      - redis
+      - db
+    networks:
+      - voicehelpdeskai_network
+    restart: unless-stopped
+
+  # Redis for caching and session storage
+  redis:
+    image: redis:7-alpine
+    container_name: voicehelpdeskai_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - voicehelpdeskai_network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+  # PostgreSQL database (alternative to SQLite for production)
+  db:
+    image: postgres:15-alpine
+    container_name: voicehelpdeskai_db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: voicehelpdeskai
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - voicehelpdeskai_network
+    restart: unless-stopped
+
+  # Celery worker for background tasks
+  celery_worker:
+    build:
+      context: .
+      target: development
+    container_name: voicehelpdeskai_celery
+    command: celery -A voicehelpdeskai.core.celery worker --loglevel=info
+    environment:
+      - DATABASE_URL=sqlite:///./app.db
+      - REDIS_URL=redis://redis:6379
+      - ENVIRONMENT=development
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+      - db
+    networks:
+      - voicehelpdeskai_network
+    restart: unless-stopped
+
+  # Celery beat scheduler
+  celery_beat:
+    build:
+      context: .
+      target: development
+    container_name: voicehelpdeskai_beat
+    command: celery -A voicehelpdeskai.core.celery beat --loglevel=info
+    environment:
+      - DATABASE_URL=sqlite:///./app.db
+      - REDIS_URL=redis://redis:6379
+      - ENVIRONMENT=development
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+      - db
+    networks:
+      - voicehelpdeskai_network
+    restart: unless-stopped
+
+  # Flower for monitoring Celery tasks
+  flower:
+    build:
+      context: .
+      target: development
+    container_name: voicehelpdeskai_flower
+    command: celery -A voicehelpdeskai.core.celery flower
+    ports:
+      - "5555:5555"
+    environment:
+      - DATABASE_URL=sqlite:///./app.db
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+    networks:
+      - voicehelpdeskai_network
+    restart: unless-stopped
+
+  # nginx reverse proxy (optional, for production-like setup)
+  nginx:
+    image: nginx:alpine
+    container_name: voicehelpdeskai_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - app
+    networks:
+      - voicehelpdeskai_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  voicehelpdeskai_network:
+    driver: bridge

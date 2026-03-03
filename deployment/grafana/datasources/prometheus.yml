@@ -1,0 +1,119 @@
+# Grafana Data Sources Configuration
+# Prometheus and other data sources for VoiceHelpDeskAI monitoring
+
+apiVersion: 1
+
+datasources:
+  # Primary Prometheus instance
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    version: 1
+    editable: true
+    
+    jsonData:
+      httpMethod: POST
+      manageAlerts: true
+      prometheusType: Prometheus
+      prometheusVersion: 2.47.0
+      cacheLevel: 'High'
+      disableRecordingRules: false
+      incrementalQuerying: false
+      exemplarTraceIdDestinations:
+        - name: trace_id
+          datasourceUid: jaeger
+          url: http://jaeger:16686/trace/$${__value.raw}
+    
+    # Optional: Basic auth
+    # basicAuth: true
+    # basicAuthUser: prometheus
+    # secureJsonData:
+    #   basicAuthPassword: password
+
+  # Loki for logs
+  - name: Loki
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    version: 1
+    editable: true
+    
+    jsonData:
+      maxLines: 1000
+      derivedFields:
+        - matcherRegex: "traceID=(\\w+)"
+          name: TraceID
+          url: http://jaeger:16686/trace/$${__value.raw}
+          datasourceUid: jaeger
+
+  # Redis monitoring
+  - name: Redis
+    type: redis-datasource
+    access: proxy
+    url: redis://redis:6379
+    version: 1
+    editable: true
+    
+    jsonData:
+      client: standalone
+      poolSize: 5
+      timeout: 10
+      pingInterval: 0
+      pipelineWindow: 0
+    
+    # Secure connection (if needed)
+    # secureJsonData:
+    #   password: redis_password
+
+  # TestData for development/testing
+  - name: TestData
+    type: testdata
+    access: proxy
+    version: 1
+    editable: true
+    isDefault: false
+    
+    jsonData:
+      csvContent: |
+        timestamp,value,series
+        2023-01-01 00:00:00,100,A
+        2023-01-01 01:00:00,110,A
+        2023-01-01 02:00:00,105,A
+
+  # Optional: InfluxDB (if using for long-term storage)
+  # - name: InfluxDB
+  #   type: influxdb
+  #   access: proxy
+  #   url: http://influxdb:8086
+  #   version: 1
+  #   editable: true
+  #   
+  #   database: voicehelpdesk
+  #   jsonData:
+  #     httpMode: GET
+  #     keepCookies: []
+  #   
+  #   secureJsonData:
+  #     password: influxdb_password
+
+  # Optional: Jaeger for distributed tracing
+  # - name: Jaeger
+  #   type: jaeger
+  #   access: proxy
+  #   url: http://jaeger:16686
+  #   uid: jaeger
+  #   version: 1
+  #   editable: true
+  #   
+  #   jsonData:
+  #     tracesToLogs:
+  #       datasourceUid: loki
+  #       tags: ['job', 'instance', 'pod', 'namespace']
+  #       mappedTags: [{ key: 'service.name', value: 'service' }]
+  #       mapTagNamesEnabled: false
+  #       spanStartTimeShift: '1h'
+  #       spanEndTimeShift: '1h'
+  #       filterByTraceID: false
+  #       filterBySpanID: false
