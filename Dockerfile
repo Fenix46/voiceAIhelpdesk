@@ -5,8 +5,7 @@ FROM python:3.11-slim as base
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1 \
-    POETRY_VERSION=1.6.1
+    PIP_DISABLE_PIP_VERSION_CHECK=1
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -21,27 +20,23 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Poetry
-RUN pip install poetry==$POETRY_VERSION
-
 # Set work directory
 WORKDIR /app
 
-# Copy dependency files
-COPY pyproject.toml poetry.lock* ./
-
-# Configure poetry and install dependencies
-RUN poetry config virtualenvs.create false \
-    && poetry install --no-dev --no-interaction --no-ansi
+# Install runtime dependencies
+COPY requirements ./requirements
+RUN pip install --upgrade pip setuptools wheel \
+    && pip install -r requirements/prod.txt
 
 # Development stage
 FROM base as development
 
 # Install development dependencies
-RUN poetry install --no-interaction --no-ansi
+RUN pip install -r requirements/dev.txt
 
 # Copy application code
 COPY . .
+RUN pip install --no-deps -e .
 
 # Create non-root user
 RUN useradd --create-home --shell /bin/bash app \
@@ -59,6 +54,7 @@ FROM base as production
 
 # Copy application code
 COPY . .
+RUN pip install --no-deps -e .
 
 # Create non-root user
 RUN useradd --create-home --shell /bin/bash app \
